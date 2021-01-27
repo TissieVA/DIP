@@ -1,4 +1,4 @@
-function [detected, highlighted] = detect(im, iteration, gamm, dSize, color)
+function [detected, markedImage] = detect(im, iteration, gamm, dSize, color)
 
     if(~exist('iteration', 'var'))
         iteration = 3;
@@ -37,7 +37,7 @@ function [detected, highlighted] = detect(im, iteration, gamm, dSize, color)
     T = graythresh( liverIm);
     binIm = imbinarize( liverIm , T);
     
-    %thresholdin
+    %thresholding
     for n = 1:iteration
         liverIm = uint8(uint8(binIm) .* liverIm);
         T = thresh(liverIm);
@@ -71,7 +71,7 @@ function [detected, highlighted] = detect(im, iteration, gamm, dSize, color)
 
     [b, l] = size(detected);
     highlight = cat(3, uint8(detected*255) * color(1), uint8(detected*255) * color(2), uint8(detected*255) * color(3));
-    highlighted = highlight + im;
+    markedImage = highlight + im;
 end
 
 
