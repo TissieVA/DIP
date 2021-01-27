@@ -16,22 +16,28 @@ function [detected, highlighted] = detect(im, iteration, gamm, dSize, color)
     
     im_gray = im2gray(im);
 
+    % blur image with gaussian filter
     im_blur = imgaussfilt(im_gray, 2);
 
     %Imadjust maps the intenisty values to a new value
     ia = imadjust(im_blur, [], [], gamm);
+    
+    %detect the ribs and remove themfrom image
     ribs = imdilate(imbinarize(ia, 0.4), strel('sphere', 5));
     ribs = 1- imclose(ribs,strel('disk',10));
     ia2 = ia .* uint8(ribs);
     ed = edge(imbinarize(ia2), 'canny');
+    
+    %creates convex hulls around objects
     liver = bwconvhull(ed, 'objects');
     liver2 = biggestArea(liver);
 
+    
     liverIm = im_blur .* uint8(liver2);
     T = graythresh( liverIm);
     binIm = imbinarize( liverIm , T);
     
-
+    %thresholdin
     for n = 1:iteration
         liverIm = uint8(uint8(binIm) .* liverIm);
         T = thresh(liverIm);
@@ -39,6 +45,7 @@ function [detected, highlighted] = detect(im, iteration, gamm, dSize, color)
         binIm = (1-imbinarize(liverIm, T) ) .* binIm;
     end
 
+    %erode and dilate
     eroded = imerode(binIm,strel('square', dSize));
     detected = imdilate(eroded, strel('sphere', 20));
     
@@ -59,7 +66,7 @@ function [detected, highlighted] = detect(im, iteration, gamm, dSize, color)
     title('areas')
     subplot(3,2,6)
     imshow(im_blur .* uint8(liver2))
-    title('liver')
+    title('liver') 
     pause
 
     [b, l] = size(detected);
